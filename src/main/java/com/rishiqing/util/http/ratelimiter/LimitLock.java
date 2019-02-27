@@ -17,16 +17,8 @@ public class LimitLock {
         return lockKey;
     }
 
-    public void setLockKey(String lockKey) {
-        this.lockKey = lockKey;
-    }
-
     public String getLockValue() {
         return lockValue;
-    }
-
-    public void setLockValue(String lockValue) {
-        this.lockValue = lockValue;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.rishiqing.util.http.ratelimiter;
 
+import com.rishiqing.util.http.ratelimiter.adapter.ShareStoreAdapterRedisImpl;
+
 import java.time.Duration;
 
 /**

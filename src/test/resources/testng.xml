@@ -1,0 +1,10 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="All" verbose="1">
+    <test name="all"   >
+        <packages>
+            <package name="com.rishiqing.util.http.ratelimiter" />
+            <package name="com.rishiqing.util.http.ratelimiter.adapter" />
+        </packages>
+    </test>
+</suite>

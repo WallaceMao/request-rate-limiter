@@ -6,6 +6,7 @@ import redis.clients.jedis.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 /**
  * 为防止系统发生bug导致的锁一直存在，因此设置的两次请求的最长时间间隔不能超过60000ms即60秒
@@ -19,7 +20,7 @@ public class ShareStoreAdapterRedisImpl implements ShareStoreAdapter {
     private static final int DEFAULT_CONNECT_TIMEOUT = 2000;
 
     //  key存在的最大时长
-    private static final int KEY_MAX_SURVIVE_MILLS = 120000;
+    static final int KEY_MAX_SURVIVE_MILLS = 120000;
     private static final int DEFAULT_SLEEP_MILLS = 100;
 
     private Map<String, String> redisConfig;
@@ -44,7 +45,7 @@ public class ShareStoreAdapterRedisImpl implements ShareStoreAdapter {
     }
 
     @Override
-    public LimitLock requestLock(String key, Bandwidth bandwidth, Long timeoutMills) throws RequestLockException {
+    public LimitLock requestLock(String key, Bandwidth bandwidth, Long timeoutMills) throws RequestLockException, TimeoutException {
         try {
             long expireMills = bandwidth.calcIntervalMills();
             if (this.pool == null) {
@@ -69,7 +70,9 @@ public class ShareStoreAdapterRedisImpl implements ShareStoreAdapter {
                     Thread.sleep(DEFAULT_SLEEP_MILLS);
                 }
             }
-        } catch (Exception e) {
+        } catch(TimeoutException e) {
+            throw e;
+        }catch (Exception e) {
             throw RequestLimiterExceptions.anyExceptionWhenRequestLock(e);
         }
     }
@@ -84,13 +87,19 @@ public class ShareStoreAdapterRedisImpl implements ShareStoreAdapter {
         this.pool.close();
     }
 
-    private long getTimeMills() {
+    long getTimeMills() {
         try (Jedis jedis = pool.getResource()) {
             return Long.valueOf(jedis.time().get(0)) * 1000;
         }
     }
 
-    private void deleteKey(String key) {
+    String getKey(String key) {
+        try (Jedis jedis = pool.getResource()){
+            return jedis.get(key);
+        }
+    }
+
+    void deleteKey(String key) {
         try (Jedis jedis = pool.getResource()){
             jedis.del(key);
         }
@@ -101,7 +110,7 @@ public class ShareStoreAdapterRedisImpl implements ShareStoreAdapter {
      * @param key
      * @param currentRedisTime
      */
-    private void clearDeprecatedKey(String key, long currentRedisTime) {
+    void clearDeprecatedKey(String key, long currentRedisTime) {
         try (Jedis jedis = pool.getResource()){
             String value = jedis.get(key);
             if (value != null && currentRedisTime - Long.valueOf(value) > KEY_MAX_SURVIVE_MILLS) {
@@ -110,7 +119,7 @@ public class ShareStoreAdapterRedisImpl implements ShareStoreAdapter {
         }
     }
 
-    private boolean setIfNotExistsAndExpire(String key, String value, Long expireMills) {
+    boolean setIfNotExistsAndExpire(String key, String value, Long expireMills) {
         long result;
         try (Jedis jedis = pool.getResource()){
             result = jedis.setnx(key, value);

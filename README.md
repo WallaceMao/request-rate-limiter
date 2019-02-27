@@ -32,3 +32,6 @@ limiter.queryLock("hello");
 //  请求key值对应的lock，并设置超时时间
 limiter.queryLock("hello", 60000L);
 ```
+
+# test
+测试时要在本地启动redis

@@ -1,5 +1,7 @@
 package com.rishiqing.util.http.ratelimiter;
 
+import java.util.concurrent.TimeoutException;
+
 /**
  * 请求频率限制器，在发送api请求的时候，避免由于请求频率过高而导致被钉钉或者企业微信的服务器拒绝
  * 默认使用redis作为频率共享存储的介质
@@ -19,15 +21,35 @@ public class RequestRateLimiter {
         this.adapter.connect();
     }
 
-    public void queryLock() throws RequestLockException {
+    public void queryLock() throws RequestLockException, TimeoutException {
         queryLock(this.configuration.getDefaultKey(), this.configuration.getDefaultTimeoutMills());
     }
 
-    public void queryLock(String key) throws RequestLockException {
+    public void queryLock(String key) throws RequestLockException, TimeoutException {
         queryLock(key, this.configuration.getDefaultTimeoutMills());
     }
 
-    public void queryLock(String key, Long timeoutMills) throws RequestLockException {
+    public void queryLock(String key, Long timeoutMills) throws RequestLockException, TimeoutException {
         this.adapter.requestLock(key, this.configuration.getBandwidth(), timeoutMills);
+    }
+
+    public void releaseLock() {
+        releaseLock(this.configuration.getDefaultKey());
+    }
+
+    public void releaseLock(String key) {
+        this.adapter.releaseLock(key);
+    }
+
+    public void shutdown() {
+        this.adapter.shutdown();
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
+    }
+
+    public ShareStoreAdapter getAdapter() {
+        return adapter;
     }
 }

@@ -10,13 +10,17 @@ import com.rishiqing.util.http.ratelimiter.ShareStoreAdapter;
  * Date: 2019-02-21 17:18
  */
 public class ShareStoreAdapterLocalImpl implements ShareStoreAdapter {
+
+    public ShareStoreAdapterLocalImpl() {
+    }
+
     @Override
     public void connect() {
 
     }
 
     @Override
-    public LimitLock requestLock(String key, Bandwidth bandwidth, Long timeoutMills) throws RequestLockException {
+    public LimitLock requestLock(String key, Bandwidth bandwidth, Long timeoutMills) {
         return null;
     }
 
