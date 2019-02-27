@@ -1,3 +1,4 @@
+![GitHub](https://img.shields.io/github/license/WallaceMao/request-rate-limiter.svg)
 # 请求的频率控制器
 
 ## 实现方案
@@ -35,3 +36,6 @@ limiter.queryLock("hello", 60000L);
 
 # test
 测试时要在本地启动redis
+
+# maven
+`mvn clean deploy -P release -Dmaven.test.skip=true`
